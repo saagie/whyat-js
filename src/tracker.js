@@ -16,7 +16,7 @@ export const init =
   ({url, application, browser}, post = defaultPost, log = defaultLog) =>
     async ({type, payload, platform, user:{id}, uri}) => {
       try {
-        await post(url, {
+        await post(`${url}/event`, {
           applicationID: application,
           platformID: platform,
           user: {id},
