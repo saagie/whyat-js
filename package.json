@@ -1,6 +1,6 @@
 {
   "name": "whyat-js",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Y@ (whyat) helps you to track your user’s action within your application and store it directly in the data source of your choice Edit",
   "main": "lib/cjs/tracker.js",
   "module": "lib/es/tracker.js",
