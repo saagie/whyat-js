@@ -14,11 +14,11 @@ jobs:
   include:
     - stage: npm release
       node_js: "7"
-      branches:
-        only: master
       script: echo "Deploying to npm ..."
       deploy:
         provider: npm
-        email: "frozen@saagie.com"
+        email: $NPM_EMAIL
         api_key: $NPM_API_KEY
-        on: deploy-npm-release
+        on:
+          branch: master
+          deploy-npm-release: true
