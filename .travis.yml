@@ -20,7 +20,7 @@ jobs:
       script:
         - echo "Deploying to npm ..."
       before_deploy:
-        -npm install -g gulp
+        - npm install -g gulp
         - npm install -g gulp-cli
       deploy:
         provider: npm
