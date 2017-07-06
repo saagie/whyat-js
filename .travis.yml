@@ -6,7 +6,9 @@ node_js:
   - "7"
   - "6"
 
-script: echo "Running tests against $(node -v) ..."
+script:
+ - echo "Running tests against $(node -v) ..."
+ - npm test
 
 jobs:
   include:
@@ -15,11 +17,9 @@ jobs:
       cache:
         directories:
           - node_modules
-      before_script:
-        - npm install -g gulp
-        - npm install -g gulp-cli
       script:
         - echo "Deploying to npm ..."
+        - npm publish
       deploy:
         provider: npm
         email: $NPM_EMAIL
