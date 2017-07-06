@@ -5,8 +5,6 @@ language: node_js
 node_js:
   - "7"
   - "6"
-  - "5"
-  - "4"
 
 script: echo "Running tests against $(node -v) ..."
 
@@ -14,7 +12,11 @@ jobs:
   include:
     - stage: npm release
       node_js: "7"
+      cache:
+        directories:
+          - node_modules
       before_script:
+        - npm install -g gulp
         - npm install -g gulp-cli
       script:
         - echo "Deploying to npm ..."
