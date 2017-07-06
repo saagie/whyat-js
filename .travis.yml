@@ -19,7 +19,6 @@ jobs:
           - node_modules
       script:
         - echo "Deploying to npm ..."
-        - npm publish
       deploy:
         provider: npm
         email: $NPM_EMAIL
