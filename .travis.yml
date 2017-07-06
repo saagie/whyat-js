@@ -14,10 +14,10 @@ jobs:
   include:
     - stage: npm release
       node_js: "7"
+      before_script:
+        - npm install -g gulp-cli
       script:
         - echo "Deploying to npm ..."
-      before_deploy:
-        - npm install -g gulp-cli
       deploy:
         provider: npm
         email: $NPM_EMAIL
