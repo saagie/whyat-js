@@ -4,6 +4,9 @@ dist: trusty
 language: node_js
 node_js:
   - "7"
+before_deploy:
+  - npm install -g gulp
+  - gulp --version
 
 deploy:
   provider: npm
