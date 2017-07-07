@@ -13,8 +13,11 @@ const defaultPost = (url, body) => fetch(url, {
 });
 
 export const init =
-  ({url, application, browser}, post = defaultPost, log = defaultLog) =>
-    async ({type, payload, platform, user:{id}, uri}) => {
+  ({url, application, browser}, post = defaultPost, log = defaultLog) => {
+    if (!url) {
+        return async () => void(0)
+    }
+    return async ({type, payload, platform, user:{id}, uri}) => {
       try {
         await post(`${url}/event`, {
           applicationID: application,
@@ -29,4 +32,5 @@ export const init =
       } catch (error) {
         log(`Error while logging event ${type} with values`, payload);
       }
-    };
+     };
+  };
