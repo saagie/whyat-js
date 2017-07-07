@@ -45,6 +45,13 @@ describe('track event', () => {
     uri
   };
 
+  it('should not call post when no server url defined', async () => {
+    track = init(Object.assign({}, config, {url:''}), http.post);
+      await track(event);
+
+      expect(http.post).to.not.have.been.called;
+  });
+
   it('should track event', async () => {
     event.payload = {
       pageUrl: 'http://server.com/index.html'
