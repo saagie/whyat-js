@@ -45,11 +45,29 @@ describe('track event', () => {
     uri
   };
 
-  it('should not call post when no server url defined', async () => {
-    track = init(Object.assign({}, config, {url:''}), http.post);
+  it('should not call post when server url is undefined', async () => {
+      track = init(Object.assign({}, config, {url: undefined}), http.post);
       await track(event);
 
       expect(http.post).to.not.have.been.called;
+  });
+
+  it('should not call post when server url is empty', async () => {
+      track = init(Object.assign({}, config, {url: ''}), http.post);
+      await track(event);
+
+      expect(http.post).to.not.have.been.called;
+  });
+
+  it('should not call post when server url is null', async () => {
+      track = init(Object.assign({}, config, {url: null}), http.post);
+      await track(event);
+
+      expect(http.post).to.not.have.been.called;
+  });
+
+  it('should throw error when server url is not of type String', async () => {
+      expect(() => init(Object.assign({}, config, {url: 2017}), http.post)).to.throw();
   });
 
   it('should track event', async () => {
