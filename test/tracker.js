@@ -4,7 +4,7 @@ import {expect, use} from 'chai';
 import {spy, match} from 'sinon';
 import sinonChai from 'sinon-chai';
 use(sinonChai);
-import {init} from '../src/tracker';
+import {init, EventType} from '../src/tracker';
 
 describe('track event', () => {
   var track, http, config;
@@ -18,6 +18,7 @@ describe('track event', () => {
     config = {
       url: 'https://tracker.saagie.io/track/event',
       application: 'mocha',
+      platform: platform,
       browser: {
         appCodeName: 'Mozilla',
         appName: 'Netscape',
@@ -30,7 +31,6 @@ describe('track event', () => {
     track = init(config, http.post);
   });
 
-  const pageVisited = 'PAGE_VISITED';
   const platform = 'test';
   const user = {
     id: '1453847392',
@@ -38,30 +38,30 @@ describe('track event', () => {
   };
   const uri = 'http://current.uri';
   const event = {
-    type: pageVisited,
+    type: EventType.PAGE_VISITED,
     platform,
     user,
-    payload: {},
+    payload: {pageUrl: 'http://server.com/index.html'},
     uri
   };
 
   it('should not call post when server url is undefined', async () => {
       track = init(Object.assign({}, config, {url: undefined}), http.post);
-      await track(event);
+    await track.postEvent(event);
 
       expect(http.post).to.not.have.been.called;
   });
 
   it('should not call post when server url is empty', async () => {
       track = init(Object.assign({}, config, {url: ''}), http.post);
-      await track(event);
+      await track.postEvent(event);
 
       expect(http.post).to.not.have.been.called;
   });
 
   it('should not call post when server url is null', async () => {
       track = init(Object.assign({}, config, {url: null}), http.post);
-      await track(event);
+      await track.postEvent(event);
 
       expect(http.post).to.not.have.been.called;
   });
@@ -71,15 +71,11 @@ describe('track event', () => {
   });
 
   it('should track event', async () => {
-    event.payload = {
-      pageUrl: 'http://server.com/index.html'
-    };
-
-    await track(event);
+    await track.postEvent(event);
 
     expect(http.post).to.have.been.calledWithMatch(
       'https://tracker.saagie.io/track/event', {
-        type: pageVisited,
+        type: EventType.PAGE_VISITED,
         applicationID: 'mocha',
         platformID: 'test',
         user: {id: '1453847392'},
@@ -89,6 +85,59 @@ describe('track event', () => {
         timestamp: match.number
       });
   });
+
+  it('should track PAGE_VISITED event', async () => {
+    event.type = 'ANOTHER_TYPE';
+
+    await track.pageViewed(user, "page title", event.payload, uri);
+    expect(http.post).to.have.been.calledWithMatch(
+      'https://tracker.saagie.io/track/event', {
+        type: EventType.PAGE_VISITED,
+        applicationID: 'mocha',
+        platformID: 'test',
+        user: {id: '1453847392'},
+        payload: {name: 'page title', pageUrl:  'http://server.com/index.html'},
+        browser: match({appCodeName: 'Mozilla'}),
+        uri: 'http://current.uri',
+        timestamp: match.number
+      });
+
+  });
+
+  it('should track LINK_CLICKED event', async () => {
+
+    await track.linkClicked(user, 'link name', event.payload, uri);
+
+    expect(http.post).to.have.been.calledWithMatch(
+      'https://tracker.saagie.io/track/event', {
+        type: EventType.LINK_CLICKED,
+        applicationID: 'mocha',
+        platformID: 'test',
+        user: {id: '1453847392'},
+        payload: {name: 'link name', pageUrl: 'http://server.com/index.html'},
+        browser: match({appCodeName: 'Mozilla'}),
+        uri: 'http://current.uri',
+        timestamp: match.number
+      });
+  });
+
+  it('should track FORM_SUBMITTED event', async () => {
+
+    await track.formSubmitted(user, 'link name', event.payload, uri);
+
+    expect(http.post).to.have.been.calledWithMatch(
+      'https://tracker.saagie.io/track/event', {
+        type: EventType.FORM_SUBMITTED,
+        applicationID: 'mocha',
+        platformID: 'test',
+        user: {id: '1453847392'},
+        payload: {name: 'link name', pageUrl: 'http://server.com/index.html'},
+        browser: match({appCodeName: 'Mozilla'}),
+        uri: 'http://current.uri',
+        timestamp: match.number
+      });
+  });
+
 
   it('should not raise an error when event has not been tracked', () => {
     http.post = () => Promise.reject(new Error('server unreachable'));
@@ -100,7 +149,7 @@ describe('track event', () => {
       pageUrl: 'http://no-server.com/index.html'
     };
 
-    expect(async () => await track(event))
+    expect(async () => await track.postEvent(event))
       .to.not.throw();
   });
 
@@ -114,7 +163,7 @@ describe('track event', () => {
       pageUrl: 'http://no-server.com/index.html'
     };
 
-    await track(event);
+    await track.postEvent(event);
 
     expect(log).to.have.been.calledOnce;
   });
