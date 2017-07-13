@@ -7,6 +7,9 @@ Use with [Y@ Server](https://github.com/saagie/whyat-server) to store your user'
 ## Installation 
 ```$ npm install whyat-js --save```
 
+Y@-js require peer dependencies, you need to install ```whatwg-fetch``` and ```babel-polyfill```  
+For ```babel-polyfill```, you also need to add ```required('babel-polyfill')``` in your application.
+
 ## Getting Started
 ```
 import {init} from 'whyat-js';
@@ -79,7 +82,7 @@ The configuration object is composed of :
 - url : the url of Y@ server
 - application: your application id or name
 - platform: your platform id or name (production, test, dev, as you wish ...)
-- a browser object with the following attributes :
+- an optional browser configuration object with the following attributes :
     - appCodeName
     - appName
     - appVersion

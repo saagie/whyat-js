@@ -3,11 +3,12 @@
 import {expect, use} from 'chai';
 import {spy, match} from 'sinon';
 import sinonChai from 'sinon-chai';
-use(sinonChai);
 import {init, EventType} from '../src/tracker';
+use(sinonChai);
+
 
 describe('track event', () => {
-  var track, http, config;
+  var track, http, config, window;
 
   beforeEach(() => {
     http = {
@@ -15,17 +16,11 @@ describe('track event', () => {
     };
     spy(http, 'post');
 
+
     config = {
       url: 'https://tracker.saagie.io/track/event',
       application: 'mocha',
-      platform: platform,
-      browser: {
-        appCodeName: 'Mozilla',
-        appName: 'Netscape',
-        appVersion: '5.0 Chrome/58.0',
-        platform: 'MacIntel',
-        userAgent: 'Mozilla/5.0 Chrome/58.0',
-      }
+      platform
     };
 
     track = init(config, http.post);
@@ -46,28 +41,28 @@ describe('track event', () => {
   };
 
   it('should not call post when server url is undefined', async () => {
-      track = init(Object.assign({}, config, {url: undefined}), http.post);
+    track = init(Object.assign({}, config, {url: undefined}), http.post);
     await track.postEvent(event);
 
-      expect(http.post).to.not.have.been.called;
+    expect(http.post).to.not.have.been.called;
   });
 
   it('should not call post when server url is empty', async () => {
-      track = init(Object.assign({}, config, {url: ''}), http.post);
-      await track.postEvent(event);
+    track = init(Object.assign({}, config, {url: ''}), http.post);
+    await track.postEvent(event);
 
-      expect(http.post).to.not.have.been.called;
+    expect(http.post).to.not.have.been.called;
   });
 
   it('should not call post when server url is null', async () => {
-      track = init(Object.assign({}, config, {url: null}), http.post);
-      await track.postEvent(event);
+    track = init(Object.assign({}, config, {url: null}), http.post);
+    await track.postEvent(event);
 
-      expect(http.post).to.not.have.been.called;
+    expect(http.post).to.not.have.been.called;
   });
 
   it('should throw error when server url is not of type String', async () => {
-      expect(() => init(Object.assign({}, config, {url: 2017}), http.post)).to.throw();
+    expect(() => init(Object.assign({}, config, {url: 2017}), http.post)).to.throw();
   });
 
   it('should track event', async () => {
@@ -96,7 +91,7 @@ describe('track event', () => {
         applicationID: 'mocha',
         platformID: 'test',
         user: {id: '1453847392'},
-        payload: {name: 'page title', pageUrl:  'http://server.com/index.html'},
+        payload: {name: 'page title', pageUrl: 'http://server.com/index.html'},
         browser: match({appCodeName: 'Mozilla'}),
         uri: 'http://current.uri',
         timestamp: match.number
