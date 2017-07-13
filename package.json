@@ -11,7 +11,7 @@
     "README.md"
   ],
   "scripts": {
-    "test": "mocha --require babel-polyfill --compilers js:babel-register test/",
+    "test": "mocha --require babel-polyfill spec/setup.js --compilers js:babel-register test/",
     "build:cjs": "babel src -d lib/cjs",
     "build:es": "gulp build:es",
     "build:umd": "browserify src/tracker.js -t [ babelify --presets [ env ] ] -o dist/whyat.js",
@@ -45,6 +45,7 @@
     "eslint": "^4.0.0",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
+    "jsdom": "^11.1.0",
     "mocha": "^3.4.2",
     "sinon": "^2.3.5",
     "sinon-chai": "^2.11.0",

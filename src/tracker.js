@@ -13,6 +13,14 @@ const defaultPost = (url, body) => fetch(url, {
   body: JSON.stringify(body)
 });
 
+const defaultBrowserConfig = {
+  appCodeName: window.navigator.appCodeName,
+  appName: window.navigator.appName,
+  appVersion: window.navigator.appVersion,
+  platform: window.navigator.platform,
+  userAgent: window.navigator.userAgent,
+};
+
 export const EventType = {
   PAGE_VISITED: 'PAGE_VISITED',
   LINK_CLICKED: 'LINK_CLICKED',
@@ -20,58 +28,60 @@ export const EventType = {
 };
 
 const URL = t.maybe(t.String);
+
 const NotEmptyString = t.refinement(t.String, s => s.length > 0);
 
-const postEvent =
-  ({url, application, platform, browser}, post, log) =>
-      async ({type, payload, user: {id}, uri, platform: currentPlatform = platform}) => {
-        try {
-          await post(`${url}/event`, {
-            applicationID: application,
-            platformID: currentPlatform,
-            user: {id},
-            type,
-            payload,
-            browser,
-            uri,
-            timestamp: Date.now()
-          });
-        } catch (error) {
-          log(`Error while logging event ${type} with values`, payload);
-        }
-      };
+const preparePostEvent =
+  ({url, application, platform, browser = defaultBrowserConfig}, post, log) =>
+    async ({type, payload, user: {id}, uri = document.location.href, platform: currentPlatform = platform}) => {
+      try {
+        await post(`${url}/event`, {
+          applicationID: application,
+          platformID: currentPlatform,
+          user: {id},
+          type,
+          payload,
+          browser,
+          uri,
+          timestamp: Date.now()
+        });
+      } catch (error) {
+        log(`Error while logging event ${type} with values`, payload);
+      }
+    };
 
-const tracker = (options, post, log) => ({
-  postEvent: postEvent(options, post, log),
-  pageViewed: (user, name = document.title, payload = {}, uri = document.location.href) => postEvent(options, post, log)({
-    type: EventType.PAGE_VISITED,
+const tracker = (options, post, log) => {
+  const postEvent = preparePostEvent(options, post, log);
+  const applyPostEvent = (type) => (user, name, payload, uri) => postEvent({
+    type,
     user,
     uri,
     payload: Object.assign({}, payload, {name})
-  }),
-  linkClicked: (user, name, payload = {}, uri = document.location.href) => postEvent(options, post, log)({
-    type: EventType.LINK_CLICKED,
-    user,
-    uri,
-    payload: Object.assign({},payload, {name})
-  }),
-  formSubmitted: (user, name, payload, uri = document.location.href) => postEvent(options, post, log)({
-    type: EventType.FORM_SUBMITTED,
-    user,
-    uri,
-    payload : Object.assign({},payload, {name})
-  })
-});
-
-const noop = (options, post, log) => ({
-    postEvent: (options, post, log) => {},
-    pageViewed:(user, name) => {},
-    linkClicked: (user, name, payload) => {}
   });
+
+  return {
+    postEvent,
+    pageViewed: applyPostEvent(EventType.PAGE_VISITED),
+    linkClicked: applyPostEvent(EventType.LINK_CLICKED),
+    formSubmitted: applyPostEvent(EventType.FORM_SUBMITTED)
+  };
+};
+
+const noop = () => {};
+
+const noTracker = () => ({
+  postEvent: noop,
+  pageViewed: noop,
+  linkClicked: noop,
+  formSubmitted: noop,
+});
 
 export const init =
   (options, post = defaultPost, log = defaultLog) =>
     t.match(URL(options.url),
       NotEmptyString, () => tracker(options, post, log),
-      t.Any, () => { log("No server url defined"); return noop(options, post, log);}
+      t.Any, () => {
+        log("No server url defined");
+        return noTracker();
+      }
     );
