@@ -29,7 +29,8 @@ export const EventType = {
 
 const URL = t.maybe(t.String);
 
-const NotEmptyString = t.refinement(t.String, s => s.length > 0);
+const ServerUrlDefined = t.refinement(t.String, s => s.length > 0);
+const DotNotTrack = t.refinement(t.String, s => !!window.navigator.doNotTrack === true)
 
 const preparePostEvent =
   ({url, application, platform, browser = defaultBrowserConfig}, post, log) =>
@@ -79,7 +80,11 @@ const noTracker = () => ({
 export const init =
   (options, post = defaultPost, log = defaultLog) =>
     t.match(URL(options.url),
-      NotEmptyString, () => tracker(options, post, log),
+      DotNotTrack, () => {
+        log("Dot Not Track option detected, no data will be transmitted.");
+        return noTracker();
+      },
+      ServerUrlDefined, () => tracker(options, post, log),
       t.Any, () => {
         log("No server url defined");
         return noTracker();
