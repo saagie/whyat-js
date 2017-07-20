@@ -8,7 +8,7 @@ use(sinonChai);
 
 
 describe('track event', () => {
-  var track, http, config, window;
+  var track, http, config;
 
   beforeEach(() => {
     http = {
@@ -161,5 +161,13 @@ describe('track event', () => {
     await track.postEvent(event);
 
     expect(log).to.have.been.calledOnce;
+  });
+
+  it('should not call post when "Do not track" option is set', async () => {
+    window.navigator.doNotTrack = 1;
+    track = init(config);
+    await track.postEvent(event);
+
+    expect(http.post).to.not.have.been.called;
   });
 });

@@ -10,4 +10,5 @@ window.navigator = {
   appVersion: '5.0 Chrome/58.0',
   platform: 'MacIntel',
   userAgent: 'Mozilla/5.0 Chrome/58.0',
+  doNotTrack: 0
 }
