@@ -15,12 +15,12 @@ For ```babel-polyfill```, you also need to add ```required('babel-polyfill')``` 
 import {init} from 'whyat-js';
   
 //init the tracker  
-const tracker = init('127.0.0.1:5000');
-
 let user = {id: 'j.doe@doe.corporation.com', name: 'John Doe'};
+const tracker = init({url: '127.0.0.1:5000', user});
+
   
 //use it  
-tracker.pageViewed(user);
+tracker.pageViewed();
 ```
 
 ## Overview
@@ -41,9 +41,20 @@ const tracker = init(
         appVersion: window.navigator.appVersion,
         platform: window.navigator.platform,
         userAgent: window.navigator.userAgent,
+      },
+      defaultAutoPageTracking: {
+        domContentLoaded: true, 
+        hashChange: true
+      },
+      user: {
+        id: your user id
+        ... // others informations about your user
       }
     });
 ```
+
+By default Y@-js track when a page is loaded (event listener on `domContentLoaded`) or the url's hash change (event listener on `hashchange`).  
+If you don't want automatic tracking of visited pages, you can override the `defaultAutoPageTracking` configuration.
 
 Tracking a event is done with only one method ```postEvent()```  
   
@@ -82,12 +93,16 @@ The configuration object is composed of :
 - url : the url of Y@ server
 - application: your application id or name
 - platform: your platform id or name (production, test, dev, as you wish ...)
+- user: an object to define properties of your user, only an id attribute is mandatory
 - an optional browser configuration object with the following attributes :
     - appCodeName
     - appName
     - appVersion
     - platform
     - userAgent
+- defaultAutoPageTracking: an option configuration to enable/disable auto-tracking of page visited. 
+    - domContentLoaded: true by default, track page visited on `DOMContentLoaded` event
+    - hashChange: true by default, track page visited on `hashchange` event, when url hash is modified (useful for app single page app)
     
 
 ```
@@ -95,13 +110,21 @@ const tracker = init({
       url: 'https://tracker.saagie.io/track/event',
       application: 'Saagie Datagovernance',
       platform: 'Production',
+      user: {
+        id: your user id
+        ... // others informations about your user
+      }
       browser: {
         appCodeName: window.navigator.appCodeName,
         appName: window.navigator.appName,
         appVersion: window.navigator.appVersion,
         platform: window.navigator.platform,
         userAgent: window.navigator.userAgent,
-      }
+      },
+      defaultAutoPageTracking: {
+               domContentLoaded: true, // Track a PAGE_VISITED event each time 'domContentLoaded' is triggered 
+               hashChange: true // Track a PAGE_VISITED event each time url's hash change
+       }
     });
 ```
 
@@ -112,7 +135,7 @@ This function use post and log methods defined via the init function and take on
 The structure of the event object is :
 - type: the type of the event (PAGE_VIEWED, LINK_CLICKED, your custom event ...)
 - payload: to add some context informations to your event
-- user: a object to define your user's informations which need to have an ```id``` attribute
+- user: an object to override the configuration user's informations
 - uri: uri of the event's page 
 
 ```
@@ -125,9 +148,10 @@ tracker.postEvent({
 ```
 
 ### Page viewed event helper
+<b>Reminder: by default page viewed are automatically tracker by Y@-js</b>  
 If you want to track a page viewed event, you can use the helper function : ```pageViewed```  
 This function take as parameters : 
-- user: object which represent your user
+- user: an object to override the configuration user's informations
 - name: the name of the page, by default we use the document.title value
 - payload: an object to add contextual information (if your provide a name attribut, it will be replace by the value of the name attribute of this function)
 - uri: uri of the event's location, by default we use the document.location.href value
@@ -136,6 +160,9 @@ This function take as parameters :
 let user = {id: '123456', firstName: 'John', lastName: 'Doe, ...};
 
 //Simplest option using document title and no contextual informations
+track.pageViewed();
+
+// Version with an override version of the user data
 track.pageViewed(user);
   
 //Version with a custom title and no contextual informations
@@ -151,15 +178,18 @@ track.pageViewed(user, 'My custom title', {aCustomInfo: 'aCustomValue', ...}, 'h
 ### Link clicked event helper
 If you want to track a link clicked event, you can use the helper function : ```linkClicked```   
 This function take as parameters : 
-- user: object which represent your user
+- user: an object to override the configuration user's informations
 - name: the name of the link
 - payload: an object to add contextual information (if your provide a name attribut, it will be replace by the value of the name attribute of this function)
 - uri: uri of the event's location, by default we use the document.location.href value
 
 ```
 let user = {id: '123456', firstName: 'John', lastName: 'Doe, ...};
+
+//Version with a link name  
+track.linkClicked('My link name');
   
-//Version with a link name
+//Version with an override version of the user data and link name
 track.linkClicked(user, 'My link name');
   
 //Version with a link name and contextual informations
@@ -172,15 +202,18 @@ track.linkClicked(user, 'My link name', {aCustomInfo: 'aCustomValue', ...}, 'htt
 ### Form submitted event helper 
 If you want to track a link clicked event, you can use the helper function : ```formSubmitted```   
 This function take as parameters : 
-- user: object which represent your user
+- user: an object to override the configuration user's informations
 - name: the name of the form
 - payload: an object to add contextual information, usually data of the form (if your provide a name attribut, it will be replace by the value of the name attribute of this function)
 - uri: uri of the event's location, by default we use the document.location.href value
 
 ```
 let user = {id: '123456', firstName: 'John', lastName: 'Doe, ...};
-  
+ 
 //Version with a form name
+track.formSubmitted('My form name');
+  
+//Version with an override version of the user data and a form name
 track.formSubmitted(user, 'My form name');
   
 //Version with a form name and contextual informations
