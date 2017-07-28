@@ -146,7 +146,7 @@ describe('track event', () => {
 
     expect(http.post).to.not.have.been.called;
 
-    setImmediate(() => {
+    setTimeout(() => {
       expect(http.post).to.have.been.calledWithMatch(
         'https://tracker.saagie.io/track/event', {
           type: EventType.PAGE_VISITED,
@@ -159,7 +159,7 @@ describe('track event', () => {
           timestamp: match.number
         });
       done();
-    });
+    }, 100);
 
     window.location.hash = '#/new.uri';
   });
