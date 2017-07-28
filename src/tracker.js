@@ -35,7 +35,7 @@ export const EventType = {
 const URL = t.maybe(t.String);
 
 const ServerUrlDefined = t.refinement(t.String, s => s.length > 0);
-const DotNotTrack = t.refinement(t.String, s => !!window.navigator.doNotTrack === true)
+const DotNotTrack = t.refinement(t.String, s => !!window.navigator.doNotTrack === true);
 
 const preparePostEvent =
   ({url, application, platform, user, browser = defaultBrowserConfig}, post, log) =>
@@ -56,6 +56,19 @@ const preparePostEvent =
       }
     };
 
+const autoTrack = function ({autoTrackPageVisited, user}, postPageVisited) {
+  const {domContentLoaded, hashChange} = Object.assign({}, defaultAutoPageTracking, autoTrackPageVisited);
+  const postAutoPageVisited = () => postPageVisited(user, document.title, {}, document.url);
+
+  if (domContentLoaded) {
+    window.addEventListener('DOMContentLoaded', postAutoPageVisited);
+  }
+
+  if (hashChange && 'onhashchange' in window) {
+    window.addEventListener('hashchange', postAutoPageVisited);
+  }
+};
+
 const tracker = (options, post, log) => {
   const postEvent = preparePostEvent(options, post, log);
   const applyPostEvent = (type) => (user = options.user, name, payload, uri) => postEvent({
@@ -65,17 +78,9 @@ const tracker = (options, post, log) => {
     payload: Object.assign({}, payload, {name})
   });
 
-  const autoTrackPageViewed = Object.assign({}, defaultAutoPageTracking, options.autoTrackPageVisited);
   const postPageVisited = applyPostEvent(EventType.PAGE_VISITED);
-  const postAutoPageVisited = () => postPageVisited(options.user, document.title, {}, document.url);
 
-  if (autoTrackPageViewed.domContentLoaded) {
-    window.addEventListener('DOMContentLoaded', postAutoPageVisited);
-  }
-
-  if (autoTrackPageViewed.hashChange && 'onhashchange' in window) {
-    window.addEventListener('hashchange', postAutoPageVisited);
-  }
+  autoTrack(options, postPageVisited);
 
   return {
     postEvent,
