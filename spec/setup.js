@@ -2,13 +2,11 @@ import jsdom from 'jsdom';
 
 const {JSDOM} = jsdom;
 
-global.window = new JSDOM('<!doctype html><html><body></body></html>');
+global.dom = new JSDOM('<!doctype html><html><head><title>Y@ page title</title></head><body></body></html>',
+  {
+    url: 'http://current.uri',
+  });
+
+global.window = dom.window;
 global.document= window.document;
-window.navigator = {
-  appCodeName: 'Mozilla',
-  appName: 'Netscape',
-  appVersion: '5.0 Chrome/58.0',
-  platform: 'MacIntel',
-  userAgent: 'Mozilla/5.0 Chrome/58.0',
-  doNotTrack: 0
-}
+global.HTMLElement = window.HTMLElement;

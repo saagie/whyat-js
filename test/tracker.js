@@ -20,7 +20,9 @@ describe('track event', () => {
     config = {
       url: 'https://tracker.saagie.io/track/event',
       application: 'mocha',
-      platform
+      platform,
+      user,
+      autoTrackPageVisited: {domContentLoaded: false, hashChange: false}
     };
 
     track = init(config, http.post);
@@ -31,13 +33,10 @@ describe('track event', () => {
     id: '1453847392',
     name: 'John Doe'
   };
-  const uri = 'http://current.uri';
   const event = {
     type: EventType.PAGE_VISITED,
     platform,
-    user,
-    payload: {pageUrl: 'http://server.com/index.html'},
-    uri
+    payload: {pageUrl: 'http://server.com/index.html'}
   };
 
   it('should not call post when server url is undefined', async () => {
@@ -76,7 +75,7 @@ describe('track event', () => {
         user: {id: '1453847392'},
         payload: {pageUrl: 'http://server.com/index.html'},
         browser: match({appCodeName: 'Mozilla'}),
-        uri: 'http://current.uri',
+        uri: 'http://current.uri/',
         timestamp: match.number
       });
   });
@@ -84,7 +83,7 @@ describe('track event', () => {
   it('should track PAGE_VISITED event', async () => {
     event.type = 'ANOTHER_TYPE';
 
-    await track.pageViewed(user, "page title", event.payload, uri);
+    await track.pageViewed(user, "page title", event.payload);
     expect(http.post).to.have.been.calledWithMatch(
       'https://tracker.saagie.io/track/event', {
         type: EventType.PAGE_VISITED,
@@ -93,15 +92,73 @@ describe('track event', () => {
         user: {id: '1453847392'},
         payload: {name: 'page title', pageUrl: 'http://server.com/index.html'},
         browser: match({appCodeName: 'Mozilla'}),
-        uri: 'http://current.uri',
+        uri: 'http://current.uri/',
         timestamp: match.number
       });
 
   });
 
+  it('should not auto track PAGE_VISITED on DOMContentLoaded', async () => {
+    const event = document.createEvent('Event');
+    event.initEvent('DOMContentLoaded', true, true);
+
+    window.document.dispatchEvent(event);
+
+    expect(http.post).to.not.have.been.called;
+  });
+
+
+  it('should auto track PAGE_VISITED on DOMContentLoaded', async () => {
+    config.autoTrackPageVisited = Object.assign({}, config.autoTrackPageVisited, {domContentLoaded: true});
+    track = init(config, http.post);
+
+    const event = document.createEvent('Event');
+    event.initEvent('DOMContentLoaded', true, true);
+
+    window.document.dispatchEvent(event);
+
+    expect(http.post).to.have.been.calledWithMatch(
+      'https://tracker.saagie.io/track/event', {
+        type: EventType.PAGE_VISITED,
+        applicationID: 'mocha',
+        platformID: 'test',
+        user: {id: '1453847392'},
+        payload: {name: 'Y@ page title'},
+        browser: match({appCodeName: 'Mozilla'}),
+        uri: 'http://current.uri/',
+        timestamp: match.number
+      });
+  });
+
+  it('should not auto track PAGE_VISITED on hashChange', async () => {
+    window.location.hash = '#/new.uri';
+
+    expect(http.post).to.not.have.been.called;
+  });
+
+  it('should auto track PAGE_VISITED on hashChange', async () => {
+    config.autoTrackPageVisited = Object.assign({}, config.autoTrackPageVisited, {hashChange: true});
+    track = init(config, http.post);
+
+    window.location.hash = '#/new.uri';
+
+    expect(http.post).to.have.been.calledWithMatch(
+      'https://tracker.saagie.io/track/event', {
+        type: EventType.PAGE_VISITED,
+        applicationID: 'mocha',
+        platformID: 'test',
+        user: {id: '1453847392'},
+        payload: {name: 'Y@ page title'},
+        browser: match({appCodeName: 'Mozilla'}),
+        uri: 'http://current.uri/#/new.uri',
+        timestamp: match.number
+      });
+    window.location.hash = '';
+  });
+
   it('should track LINK_CLICKED event', async () => {
 
-    await track.linkClicked(user, 'link name', event.payload, uri);
+    await track.linkClicked(user, 'link name', event.payload);
 
     expect(http.post).to.have.been.calledWithMatch(
       'https://tracker.saagie.io/track/event', {
@@ -111,14 +168,14 @@ describe('track event', () => {
         user: {id: '1453847392'},
         payload: {name: 'link name', pageUrl: 'http://server.com/index.html'},
         browser: match({appCodeName: 'Mozilla'}),
-        uri: 'http://current.uri',
+        uri: 'http://current.uri/',
         timestamp: match.number
       });
   });
 
   it('should track FORM_SUBMITTED event', async () => {
 
-    await track.formSubmitted(user, 'link name', event.payload, uri);
+    await track.formSubmitted(user, 'link name', event.payload);
 
     expect(http.post).to.have.been.calledWithMatch(
       'https://tracker.saagie.io/track/event', {
@@ -128,7 +185,7 @@ describe('track event', () => {
         user: {id: '1453847392'},
         payload: {name: 'link name', pageUrl: 'http://server.com/index.html'},
         browser: match({appCodeName: 'Mozilla'}),
-        uri: 'http://current.uri',
+        uri: 'http://current.uri/',
         timestamp: match.number
       });
   });
