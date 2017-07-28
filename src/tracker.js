@@ -66,20 +66,20 @@ const tracker = (options, post, log) => {
   });
 
   const autoTrackPageViewed = Object.assign({}, defaultAutoPageTracking, options.autoTrackPageVisited);
-  const postAutoPageVisited = () => applyPostEvent(EventType.PAGE_VISITED)(options.user, document.title, {}, document.url);
+  const postPageVisited = applyPostEvent(EventType.PAGE_VISITED);
+  const postAutoPageVisited = () => postPageVisited(options.user, document.title, {}, document.url);
 
   if (autoTrackPageViewed.domContentLoaded) {
     window.addEventListener('DOMContentLoaded', postAutoPageVisited);
   }
 
   if (autoTrackPageViewed.hashChange && 'onhashchange' in window) {
-    window.addEventListener('hashchange', applyPostEvent(EventType.PAGE_VISITED)(options.user, document.title, {}, document.url));
+    window.addEventListener('hashchange', postAutoPageVisited);
   }
-
 
   return {
     postEvent,
-    pageViewed: applyPostEvent(EventType.PAGE_VISITED),
+    pageViewed: postPageVisited,
     linkClicked: applyPostEvent(EventType.LINK_CLICKED),
     formSubmitted: applyPostEvent(EventType.FORM_SUBMITTED)
   };

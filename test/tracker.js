@@ -28,6 +28,10 @@ describe('track event', () => {
     track = init(config, http.post);
   });
 
+  afterEach(() => {
+    window.location.hash = '';
+  });
+
   const platform = 'test';
   const user = {
     id: '1453847392',
@@ -84,6 +88,7 @@ describe('track event', () => {
     event.type = 'ANOTHER_TYPE';
 
     await track.pageViewed(user, "page title", event.payload);
+
     expect(http.post).to.have.been.calledWithMatch(
       'https://tracker.saagie.io/track/event', {
         type: EventType.PAGE_VISITED,
@@ -95,7 +100,6 @@ describe('track event', () => {
         uri: 'http://current.uri/',
         timestamp: match.number
       });
-
   });
 
   it('should not auto track PAGE_VISITED on DOMContentLoaded', async () => {
@@ -136,24 +140,28 @@ describe('track event', () => {
     expect(http.post).to.not.have.been.called;
   });
 
-  it('should auto track PAGE_VISITED on hashChange', async () => {
+  it('should auto track PAGE_VISITED on hashChange', (done) => {
     config.autoTrackPageVisited = Object.assign({}, config.autoTrackPageVisited, {hashChange: true});
     track = init(config, http.post);
 
-    window.location.hash = '#/new.uri';
+    expect(http.post).to.not.have.been.called;
 
-    expect(http.post).to.have.been.calledWithMatch(
-      'https://tracker.saagie.io/track/event', {
-        type: EventType.PAGE_VISITED,
-        applicationID: 'mocha',
-        platformID: 'test',
-        user: {id: '1453847392'},
-        payload: {name: 'Y@ page title'},
-        browser: match({appCodeName: 'Mozilla'}),
-        uri: 'http://current.uri/#/new.uri',
-        timestamp: match.number
-      });
-    window.location.hash = '';
+    setImmediate(() => {
+      expect(http.post).to.have.been.calledWithMatch(
+        'https://tracker.saagie.io/track/event', {
+          type: EventType.PAGE_VISITED,
+          applicationID: 'mocha',
+          platformID: 'test',
+          user: {id: '1453847392'},
+          payload: {name: 'Y@ page title'},
+          browser: match({appCodeName: 'Mozilla'}),
+          uri: 'http://current.uri/#/new.uri',
+          timestamp: match.number
+        });
+      done();
+    });
+
+    window.location.hash = '#/new.uri';
   });
 
   it('should track LINK_CLICKED event', async () => {
