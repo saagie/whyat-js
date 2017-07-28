@@ -21,6 +21,11 @@ const defaultBrowserConfig = {
   userAgent: window.navigator.userAgent,
 };
 
+const defaultAutoPageTracking = {
+  domContentLoaded: true,
+  hashChange: true
+};
+
 export const EventType = {
   PAGE_VISITED: 'PAGE_VISITED',
   LINK_CLICKED: 'LINK_CLICKED',
@@ -33,8 +38,8 @@ const ServerUrlDefined = t.refinement(t.String, s => s.length > 0);
 const DotNotTrack = t.refinement(t.String, s => !!window.navigator.doNotTrack === true)
 
 const preparePostEvent =
-  ({url, application, platform, browser = defaultBrowserConfig}, post, log) =>
-    async ({type, payload, user: {id}, uri = document.location.href, platform: currentPlatform = platform}) => {
+  ({url, application, platform, user, browser = defaultBrowserConfig}, post, log) =>
+    async ({type, payload, user: {id} = user, uri = document.location.href, platform: currentPlatform = platform}) => {
       try {
         await post(`${url}/event`, {
           applicationID: application,
@@ -53,12 +58,24 @@ const preparePostEvent =
 
 const tracker = (options, post, log) => {
   const postEvent = preparePostEvent(options, post, log);
-  const applyPostEvent = (type) => (user, name, payload, uri) => postEvent({
+  const applyPostEvent = (type) => (user = options.user, name, payload, uri) => postEvent({
     type,
     user,
     uri,
     payload: Object.assign({}, payload, {name})
   });
+
+  const autoTrackPageViewed = Object.assign({}, defaultAutoPageTracking, options.autoTrackPageVisited);
+  const postAutoPageVisited = () => applyPostEvent(EventType.PAGE_VISITED)(options.user, document.title, {}, document.url);
+
+  if (autoTrackPageViewed.domContentLoaded) {
+    window.addEventListener('DOMContentLoaded', postAutoPageVisited);
+  }
+
+  if (autoTrackPageViewed.hashChange && 'onhashchange' in window) {
+    window.addEventListener('hashchange', applyPostEvent(EventType.PAGE_VISITED)(options.user, document.title, {}, document.url));
+  }
+
 
   return {
     postEvent,
