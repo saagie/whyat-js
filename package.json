@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "test": "mocha --require babel-polyfill spec/setup.js --compilers js:babel-register test/",
+    "test:watch": "npm run test -- -w",
     "build:cjs": "babel src -d lib/cjs",
     "build:es": "gulp build:es",
     "build:umd": "browserify src/tracker.js -t [ babelify --presets [ env ] ] -o dist/whyat.js",
