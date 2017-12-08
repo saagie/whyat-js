@@ -1,0 +1,15 @@
+{
+  "extends": "airbnb-base",
+  "env": {
+    "browser": true
+  },
+  "rules": {
+    "max-len": [1, 120, 2, {"ignoreComments": true}],
+    "quote-props": [1,  "consistent-as-needed"],
+    "space-infix-ops": 0,
+    "no-unused-vars": [1, {"vars": "local", "args": "none"}],
+    "strict": ["error", "global"],
+    "object-curly-newline": 0,
+    "function-paren-newline": 0
+  }
+}

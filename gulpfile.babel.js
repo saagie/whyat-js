@@ -6,8 +6,8 @@ gulp.task('build:es', () => {
     .pipe(babel({
       babelrc: false,
       presets: [
-        ['env', { modules: false }]
-      ]
+        ['env', { modules: false }],
+      ],
     }))
     .pipe(gulp.dest('lib/es'));
 });
