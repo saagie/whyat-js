@@ -15,7 +15,7 @@
     "build:cjs": "babel src -d lib/cjs",
     "build:es": "gulp build:es",
     "build:umd": "gulp build:umd",
-    "build:umd:min": "npm run build:umd && uglifyjs dist/whyat.js -o dist/whyat.min.js",
+    "build:umd:min": "npm run build:umd && uglifyjs dist/whyat.js -o dist/whyat.min.js -c",
     "build": "npm run build:es && npm run build:cjs && npm run build:umd:min",
     "prepare": "npm run build"
   },
@@ -52,10 +52,10 @@
     "mocha": "^3.4.2",
     "sinon": "^2.3.5",
     "sinon-chai": "^2.11.0",
-    "uglify": "^0.1.5"
+    "uglify-js": "^3.2.2"
   },
   "dependencies": {
-    "whatwg-fetch": "^2.0.3",
-    "tcomb": "^3.2.21"
+    "tcomb": "^3.2.21",
+    "whatwg-fetch": "^2.0.3"
   }
 }
