@@ -2,8 +2,7 @@
   "name": "whyat-js",
   "version": "0.4.0",
   "description": "Y@ (whyat) helps you to track your user’s action within your application and store it directly in the data source of your choice Edit",
-  "main": "lib/cjs/tracker.js",
-  "module": "lib/es/tracker.js",
+  "main": "dist/whyat.min.js",
   "files": [
     "dist",
     "lib",
@@ -15,10 +14,10 @@
     "test:watch": "npm run test -- -w",
     "build:cjs": "babel src -d lib/cjs",
     "build:es": "gulp build:es",
-    "build:umd": "browserify src/tracker.js -t [ babelify --presets [ env ] ] -o dist/whyat.js",
-    "build:umd:min": "browserify src/tracker.js -t [ babelify --presets [ env ] ] | uglifyjs -c -m -o dist/whyat.min.js",
-    "build": "npm run build:es && npm run build:cjs",
-    "prepublish": "npm run build"
+    "build:umd": "browserify src/tracker.js -x 'tcomb' -x 'whatwg-fetch' -t [ babelify --presets [ env ] ] --standalone whyat-js -o dist/whyat.js",
+    "build:umd:min": "npm run build:umd && uglifyjs dist/whyat.js -o dist/whyat.min.js",
+    "build": "npm run build:es && npm run build:cjs && npm run build:umd:min",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -52,14 +51,10 @@
     "mocha": "^3.4.2",
     "sinon": "^2.3.5",
     "sinon-chai": "^2.11.0",
-    "uglify": "^0.1.5",
-    "whatwg-fetch": "^2.0.3"
-  },
-  "peerDependencies": {
-    "babel-polyfill": "^6.23.0",
-    "whatwg-fetch": "^2.0.3"
+    "uglify": "^0.1.5"
   },
   "dependencies": {
+    "whatwg-fetch": "^2.0.3",
     "tcomb": "^3.2.21"
   }
 }
