@@ -14,7 +14,7 @@
     "test:watch": "npm run test -- -w",
     "build:cjs": "babel src -d lib/cjs",
     "build:es": "gulp build:es",
-    "build:umd": "browserify src/tracker.js -x 'tcomb' -x 'whatwg-fetch' -t [ babelify --presets [ env ] ] --standalone whyat-js -o dist/whyat.js",
+    "build:umd": "gulp build:umd",
     "build:umd:min": "npm run build:umd && uglifyjs dist/whyat.js -o dist/whyat.min.js",
     "build": "npm run build:es && npm run build:cjs && npm run build:umd:min",
     "prepare": "npm run build"
@@ -37,6 +37,7 @@
     "babel-cli": "^6.24.1",
     "babel-core": "^6.25.0",
     "babel-loader": "^7.1.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.5.2",
     "babel-register": "^6.24.1",
     "babelify": "^7.3.0",
