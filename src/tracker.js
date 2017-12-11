@@ -91,7 +91,7 @@ const tracker = (options, post, log) => {
   };
 };
 
-const noop = () => {};
+const noop = () => Promise.resolve();
 
 const noTracker = () => ({
   postEvent: noop,

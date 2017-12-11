@@ -3396,7 +3396,9 @@ var tracker = function tracker(options, post, log) {
   };
 };
 
-var noop = function noop() {};
+var noop = function noop() {
+  return Promise.resolve();
+};
 
 var noTracker = function noTracker() {
   return {
