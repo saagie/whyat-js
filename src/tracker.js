@@ -37,7 +37,7 @@ const ServerUrlDefined = t.refinement(t.String, s => s.length > 0);
 const DotNotTrack = t.refinement(t.String, s => !!window.navigator.doNotTrack === true);
 
 const preparePostEvent =
-  ({ url, application, platform, user, browser = defaultBrowserConfig }, post, log) =>
+  ({ url, application, platform, user = { id: 'unknown' }, browser = defaultBrowserConfig }, post, log) =>
     async ({ type, payload, user: { id } = user, uri = document.location.href,
       platform: currentPlatform = platform }) => {
       try {

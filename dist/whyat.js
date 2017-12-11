@@ -3290,7 +3290,8 @@ var preparePostEvent = function preparePostEvent(_ref, post, log) {
   var url = _ref.url,
       application = _ref.application,
       platform = _ref.platform,
-      user = _ref.user,
+      _ref$user = _ref.user,
+      user = _ref$user === undefined ? { id: 'unknown' } : _ref$user,
       _ref$browser = _ref.browser,
       browser = _ref$browser === undefined ? defaultBrowserConfig : _ref$browser;
   return function () {
