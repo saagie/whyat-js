@@ -3266,6 +3266,8 @@ var defaultBrowserConfig = {
   userAgent: window.navigator.userAgent
 };
 
+var defaultUser = { id: 'unknown' };
+
 var defaultAutoPageTracking = {
   domContentLoaded: true,
   hashChange: true
@@ -3291,16 +3293,15 @@ var preparePostEvent = function preparePostEvent(_ref, post, log) {
       application = _ref.application,
       platform = _ref.platform,
       _ref$user = _ref.user,
-      user = _ref$user === undefined ? { id: 'unknown' } : _ref$user,
+      globalUser = _ref$user === undefined ? defaultUser : _ref$user,
       _ref$browser = _ref.browser,
       browser = _ref$browser === undefined ? defaultBrowserConfig : _ref$browser;
   return function () {
     var _ref3 = _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee(_ref2) {
       var type = _ref2.type,
           payload = _ref2.payload,
-          _ref2$user = _ref2.user;
-      _ref2$user = _ref2$user === undefined ? user : _ref2$user;
-      var id = _ref2$user.id,
+          _ref2$user = _ref2.user,
+          user = _ref2$user === undefined ? globalUser : _ref2$user,
           _ref2$uri = _ref2.uri,
           uri = _ref2$uri === undefined ? document.location.href : _ref2$uri,
           _ref2$platform = _ref2.platform,
@@ -3314,7 +3315,7 @@ var preparePostEvent = function preparePostEvent(_ref, post, log) {
               return post(url + '/event', {
                 applicationID: application,
                 platformID: currentPlatform,
-                user: { id: id },
+                user: { id: user.id || defaultUser.id },
                 type: type,
                 payload: payload,
                 browser: browser,
