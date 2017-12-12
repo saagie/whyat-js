@@ -3299,7 +3299,8 @@ var preparePostEvent = function preparePostEvent(_ref, post, log) {
   return function () {
     var _ref3 = _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee(_ref2) {
       var type = _ref2.type,
-          payload = _ref2.payload,
+          _ref2$payload = _ref2.payload,
+          payload = _ref2$payload === undefined ? {} : _ref2$payload,
           _ref2$user = _ref2.user,
           user = _ref2$user === undefined ? globalUser : _ref2$user,
           _ref2$uri = _ref2.uri,

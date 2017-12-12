@@ -40,7 +40,7 @@ const DotNotTrack = t.refinement(t.String, s => !!window.navigator.doNotTrack ==
 
 const preparePostEvent =
   ({ url, application, platform, user: globalUser = defaultUser, browser = defaultBrowserConfig }, post, log) =>
-    async ({ type, payload, user = globalUser, uri = document.location.href,
+    async ({ type, payload = {}, user = globalUser, uri = document.location.href,
       platform: currentPlatform = platform }) => {
       try {
         await post(`${url}/event`, {
