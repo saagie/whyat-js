@@ -7,20 +7,22 @@ Use with [Y@ Server](https://github.com/saagie/whyat-server) to store your user'
 ## Installation 
 ```$ npm install whyat-js --save```
 
-Y@-js require peer dependencies, you need to install ```whatwg-fetch``` and ```babel-polyfill```  
-For ```babel-polyfill```, you also need to add ```required('babel-polyfill')``` in your application.
-
 ## Getting Started
 ```
 import {init} from 'whyat-js';
   
 //init the tracker  
 let user = {id: 'j.doe@doe.corporation.com', name: 'John Doe'};
-const tracker = init({url: '127.0.0.1:5000', user});
+const tracker = init({
+                        url: '127.0.0.1:5000', 
+                        plateform: 'production',
+                        application: 'myApplicationName', 
+                        user
+                    });
 
   
 //use it  
-tracker.pageViewed();
+track.linkClicked('My link name');
 ```
 
 ## Overview
