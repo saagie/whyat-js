@@ -14,8 +14,10 @@ import {init} from 'whyat-js';
 //init the tracker  
 let user = {id: 'j.doe@doe.corporation.com', name: 'John Doe'};
 const tracker = init({
-                        url: '127.0.0.1:5000', 
-                        plateform: 'production',
+                        url: '127.0.0.1:5000',
+                        area: 'datacenter 1'
+                        tenant: 'myTenantName',   
+                        platform: 'production',
                         application: 'myApplicationName', 
                         user
                     });
@@ -36,7 +38,9 @@ const tracker = init(
 {
       url: urlOfTheWhyatServer,
       application: yourApplicationNameOrId,
-      platform: yourPlatformNameOrId,
+      platform: yourPlatformNameOrId,  
+      area: yourDatacenterOrDeploymentArea,  
+      tenant: yourTenantNameOrId
       browser: {
         appCodeName: window.navigator.appCodeName,
         appName: window.navigator.appName,
@@ -44,7 +48,7 @@ const tracker = init(
         platform: window.navigator.platform,
         userAgent: window.navigator.userAgent,
       },
-      defaultAutoPageTracking: {
+      autoTrackPageVisited: {
         domContentLoaded: true, 
         hashChange: true
       },
@@ -93,6 +97,8 @@ The init method of the tracker take 3 parameters :
 
 The configuration object is composed of : 
 - url : the url of Y@ server
+- area: your data center/ deployment area id or name (optional)  
+- tenant: your customer/client id or name
 - application: your application id or name
 - platform: your platform id or name (production, test, dev, as you wish ...)
 - user: an object to define properties of your user, only an id attribute is mandatory
@@ -102,14 +108,22 @@ The configuration object is composed of :
     - appVersion
     - platform
     - userAgent
-- defaultAutoPageTracking: an option configuration to enable/disable auto-tracking of page visited. 
+- autoTrackPageVisited: a optional configuration to enable/disable auto-tracking of page visited. 
     - domContentLoaded: true by default, track page visited on `DOMContentLoaded` event
     - hashChange: true by default, track page visited on `hashchange` event, when url hash is modified (useful for app single page app)
+- tenantConfig: a optional configuration to specify how to set tenant if not already define
+    - extractTenant: is a function declaration with `document.location` as default parameter to define how get the tenant name or id  
+  
+By default the tenant (if not already define via the tenant option) is set from the `document.location.hostname`, we take the first part before the first `-` or `.`  
+Example: `mytenant-myapp.mydomain.com` or `mytenant.myapp.mydomain.com`, we set tenant with `mytenant` value  
+
     
 
 ```
 const tracker = init({
       url: 'https://tracker.saagie.io/track/event',
+      area: 'datacenter1',
+      tenant: 'Saagie',
       application: 'Saagie Datagovernance',
       platform: 'Production',
       user: {
@@ -123,10 +137,13 @@ const tracker = init({
         platform: window.navigator.platform,
         userAgent: window.navigator.userAgent,
       },
-      defaultAutoPageTracking: {
-               domContentLoaded: true, // Track a PAGE_VISITED event each time 'domContentLoaded' is triggered 
-               hashChange: true // Track a PAGE_VISITED event each time url's hash change
-       }
+      autoTrackPageVisited: {
+        domContentLoaded: true, // Track a PAGE_VISITED event each time 'domContentLoaded' is triggered 
+        hashChange: true // Track a PAGE_VISITED event each time url's hash change
+       },
+      tenantConfig: {
+        extractTenant: url => extractTenant: url => url.pathname.split('/')[1], // function to extract tenant from first path element
+      },
     });
 ```
 

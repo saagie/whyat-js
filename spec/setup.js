@@ -1,6 +1,6 @@
 import jsdom from 'jsdom';
 
-const {JSDOM} = jsdom;
+const { JSDOM } = jsdom;
 
 global.dom = new JSDOM('<!doctype html><html><head><title>Y@ page title</title></head><body></body></html>',
   {

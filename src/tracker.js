@@ -12,6 +12,14 @@ const defaultPost = (url, body) => fetch(url, {
   body: JSON.stringify(body),
 });
 
+const UndefinedTenantError = function (message) {
+  this.message = message || 'tenant is undefined';
+  this.stack = (new Error()).stack;
+};
+
+UndefinedTenantError.prototype = new Error();
+UndefinedTenantError.prototype.name = 'UndefinedTenantError';
+
 const defaultBrowserConfig = {
   appCodeName: window.navigator.appCodeName,
   appName: window.navigator.appName,
@@ -27,6 +35,16 @@ const defaultAutoPageTracking = {
   hashChange: true,
 };
 
+const defaultTenantFunction = {
+  extractTenant: (url) => {
+    const extractedTenant = url.hostname.substr(0, url.hostname.search('(-|\\.)'));
+    if (extractedTenant) {
+      return extractedTenant;
+    }
+    throw new UndefinedTenantError();
+  },
+};
+
 export const EventType = {
   PAGE_VISITED: 'PAGE_VISITED',
   LINK_CLICKED: 'LINK_CLICKED',
@@ -39,12 +57,16 @@ const ServerUrlDefined = t.refinement(t.String, s => s.length > 0);
 const DotNotTrack = t.refinement(t.String, s => !!window.navigator.doNotTrack === true);
 
 const preparePostEvent =
-  ({ url, application, platform, user: globalUser = defaultUser, browser = defaultBrowserConfig }, post, log) =>
+  ({ url, area, tenant, application, platform, user: globalUser = defaultUser,
+    browser = defaultBrowserConfig, tenantConfig = defaultTenantFunction }, post, log) =>
+
     async ({ type, payload = {}, user = globalUser, uri = document.location.href,
       platform: currentPlatform = platform }) => {
       try {
         await post(`${url}/event`, {
           applicationID: application,
+          area,
+          tenant: tenant || tenantConfig.extractTenant(document.location),
           platformID: currentPlatform,
           user: { id: user.id || defaultUser.id },
           type,
@@ -54,7 +76,11 @@ const preparePostEvent =
           timestamp: Date.now(),
         });
       } catch (error) {
-        log(`Error while logging event ${type} with values`, payload);
+        if (error instanceof UndefinedTenantError) {
+          log(`Error can't log event ${type} because ${error.message}`, payload);
+        } else {
+          log(`Error while logging event ${type} with values`, payload);
+        }
       }
     };
 

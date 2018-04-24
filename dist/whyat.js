@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.whyat = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.whyat = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 module.exports = require("regenerator-runtime");
 
 },{"regenerator-runtime":3}],2:[function(require,module,exports){
@@ -3113,7 +3113,10 @@ module.exports = update;
 
   function parseHeaders(rawHeaders) {
     var headers = new Headers()
-    rawHeaders.split(/\r?\n/).forEach(function(line) {
+    // Replace instances of \r\n and \n followed by at least one space or horizontal tab with a space
+    // https://tools.ietf.org/html/rfc7230#section-3.2
+    var preProcessedHeaders = rawHeaders.replace(/\r?\n[\t ]+/g, ' ')
+    preProcessedHeaders.split(/\r?\n/).forEach(function(line) {
       var parts = line.split(':')
       var key = parts.shift().trim()
       if (key) {
@@ -3132,7 +3135,7 @@ module.exports = update;
     }
 
     this.type = 'default'
-    this.status = 'status' in options ? options.status : 200
+    this.status = options.status === undefined ? 200 : options.status
     this.ok = this.status >= 200 && this.status < 300
     this.statusText = 'statusText' in options ? options.statusText : 'OK'
     this.headers = new Headers(options.headers)
@@ -3199,6 +3202,8 @@ module.exports = update;
 
       if (request.credentials === 'include') {
         xhr.withCredentials = true
+      } else if (request.credentials === 'omit') {
+        xhr.withCredentials = false
       }
 
       if ('responseType' in xhr && support.blob) {
@@ -3258,6 +3263,14 @@ var defaultPost = function defaultPost(url, body) {
   });
 };
 
+var UndefinedTenantError = function UndefinedTenantError(message) {
+  this.message = message || 'tenant is not defined';
+  this.stack = new Error().stack;
+};
+
+UndefinedTenantError.prototype = new Error();
+UndefinedTenantError.prototype.name = 'UndefinedTenantError';
+
 var defaultBrowserConfig = {
   appCodeName: window.navigator.appCodeName,
   appName: window.navigator.appName,
@@ -3271,6 +3284,16 @@ var defaultUser = { id: 'unknown' };
 var defaultAutoPageTracking = {
   domContentLoaded: true,
   hashChange: true
+};
+
+var defaultTenantFunction = {
+  extractTenant: function extractTenant(url) {
+    var extractedTenant = url.hostname.substr(0, url.hostname.search('(-|\\.)'));
+    if (extractedTenant) {
+      return extractedTenant;
+    }
+    throw new UndefinedTenantError();
+  }
 };
 
 var EventType = exports.EventType = {
@@ -3290,12 +3313,16 @@ var DotNotTrack = _tcomb2.default.refinement(_tcomb2.default.String, function (s
 
 var preparePostEvent = function preparePostEvent(_ref, post, log) {
   var url = _ref.url,
+      area = _ref.area,
+      tenant = _ref.tenant,
       application = _ref.application,
       platform = _ref.platform,
       _ref$user = _ref.user,
       globalUser = _ref$user === undefined ? defaultUser : _ref$user,
       _ref$browser = _ref.browser,
-      browser = _ref$browser === undefined ? defaultBrowserConfig : _ref$browser;
+      browser = _ref$browser === undefined ? defaultBrowserConfig : _ref$browser,
+      _ref$tenantConfig = _ref.tenantConfig,
+      tenantConfig = _ref$tenantConfig === undefined ? defaultTenantFunction : _ref$tenantConfig;
   return function () {
     var _ref3 = _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee(_ref2) {
       var type = _ref2.type,
@@ -3315,6 +3342,8 @@ var preparePostEvent = function preparePostEvent(_ref, post, log) {
               _context.next = 3;
               return post(url + '/event', {
                 applicationID: application,
+                area: area,
+                tenant: tenant || tenantConfig.extractTenant(document.location),
                 platformID: currentPlatform,
                 user: { id: user.id || defaultUser.id },
                 type: type,
@@ -3332,7 +3361,11 @@ var preparePostEvent = function preparePostEvent(_ref, post, log) {
               _context.prev = 5;
               _context.t0 = _context['catch'](0);
 
-              log('Error while logging event ' + type + ' with values', payload);
+              if (_context.t0 instanceof UndefinedTenantError) {
+                log('Error can\'t log event ' + type + ' because ' + _context.t0.message, payload);
+              } else {
+                log('Error while logging event ' + type + ' with values', payload);
+              }
 
             case 8:
             case 'end':
