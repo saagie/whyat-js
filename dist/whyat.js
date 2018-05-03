@@ -3264,7 +3264,7 @@ var defaultPost = function defaultPost(url, body) {
 };
 
 var UndefinedTenantError = function UndefinedTenantError(message) {
-  this.message = message || 'tenant is not defined';
+  this.message = message || 'tenant is undefined';
   this.stack = new Error().stack;
 };
 
