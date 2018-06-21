@@ -46,10 +46,10 @@
     "eslint": "^4.9.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.8.0",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.0",
     "gulp-babel": "^6.1.2",
     "jsdom": "^11.1.0",
-    "mocha": "^3.4.2",
+    "mocha": "^5.2.0",
     "sinon": "^2.3.5",
     "sinon-chai": "^2.11.0",
     "uglify-js": "^3.2.2"
